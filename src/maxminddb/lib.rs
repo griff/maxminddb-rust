@@ -401,14 +401,25 @@ impl<'de> Reader {
     /// let reader = maxminddb::Reader::open("test-data/test-data/GeoIP2-City-Test.mmdb").unwrap();
     /// ```
     pub fn open(database: &str) -> Result<Reader, MaxMindDBError> {
-        let data_section_separator_size = 16;
-
         let path = Path::new(database);
 
         let mut f = File::open(&path)?;
 
         let mut buf = Vec::new();
         f.read_to_end(&mut buf)?;
+        Self::read(buf)
+    }
+
+    /// Read a MaxMind DB database from memory.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// let reader = maxminddb::Reader::read(include_bytes!("../../test-data/test-data/GeoIP2-City-Test.mmdb").to_vec()).unwrap();
+    /// ```
+    pub fn read(buf: Vec<u8>) -> Result<Reader, MaxMindDBError> {
+        let data_section_separator_size = 16;
+
         let metadata_start = find_metadata_start(&buf)?;
 
         let metadata_decoder = BinaryDecoder {
